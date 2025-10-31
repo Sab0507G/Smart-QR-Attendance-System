@@ -39,11 +39,11 @@ export default function StudentPortal() {
 
   useEffect(() => {
     return () => {
-      if (scanner) {
+      if (scanner && scanning) {
         scanner.stop().catch(console.error);
       }
     };
-  }, [scanner]);
+  }, [scanner, scanning]);
 
   const startScanning = async () => {
     try {
