@@ -40,7 +40,9 @@ export default function StudentPortal() {
   useEffect(() => {
     return () => {
       if (scanner && scanning) {
-        scanner.stop().catch(console.error);
+        scanner.stop().then(() => scanner.clear()).catch(() => {
+          // Silently handle cleanup errors
+        });
       }
     };
   }, [scanner, scanning]);
@@ -69,13 +71,18 @@ export default function StudentPortal() {
   };
 
   const stopScanning = async () => {
-    if (scanner) {
+    if (scanner && scanning) {
       try {
         await scanner.stop();
+        scanner.clear();
         setScanning(false);
+        setScanner(null);
         toast.info("Camera stopped");
       } catch (error) {
         console.error("Stop error:", error);
+        // Even if stop fails, reset the state
+        setScanning(false);
+        setScanner(null);
       }
     }
   };
