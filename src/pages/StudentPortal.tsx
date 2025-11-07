@@ -16,6 +16,7 @@ export default function StudentPortal() {
   const [scanning, setScanning] = useState(false);
   const [scanner, setScanner] = useState<Html5Qrcode | null>(null);
   const [scannedContent, setScannedContent] = useState<string>("");
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -88,8 +89,10 @@ export default function StudentPortal() {
   };
 
   const onScanSuccess = async (decodedText: string) => {
-    if (!session?.user) return;
+    if (!session?.user || isProcessing) return;
 
+    setIsProcessing(true);
+    
     try {
       await stopScanning();
       setScannedContent(decodedText);
@@ -155,6 +158,7 @@ export default function StudentPortal() {
     } catch (error) {
       console.error("Scan error:", error);
       toast.error("An error occurred");
+      setIsProcessing(false);
     }
   };
 

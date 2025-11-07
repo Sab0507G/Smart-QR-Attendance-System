@@ -46,6 +46,11 @@ export default function TeacherPortal() {
       fetchClasses();
       fetchAttendance();
       
+      // Set up polling as backup to real-time
+      const pollInterval = setInterval(() => {
+        fetchAttendance();
+      }, 5000);
+      
       // Subscribe to real-time attendance updates
       const channel = supabase
         .channel('attendance-changes')
@@ -66,6 +71,7 @@ export default function TeacherPortal() {
 
       return () => {
         supabase.removeChannel(channel);
+        clearInterval(pollInterval);
       };
     }
   }, [session]);
