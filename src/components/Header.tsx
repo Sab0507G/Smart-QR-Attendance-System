@@ -3,10 +3,29 @@ import { Button } from "./ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useEffect, useState } from "react";
 
 export const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const { data } = await (supabase as any)
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", session.user.id)
+          .single();
+        
+        setUserRole(data?.role || null);
+      }
+    };
+
+    fetchUserRole();
+  }, [location.pathname]);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -39,26 +58,33 @@ export const Header = () => {
           >
             Home
           </Link>
-          <Link
-            to="/student"
-            className={`text-sm font-medium transition-colors hover:text-primary-foreground ${
-              isActive("/student")
-                ? "text-primary-foreground underline"
-                : "text-primary-foreground/80"
-            }`}
-          >
-            Student
-          </Link>
-          <Link
-            to="/teacher"
-            className={`text-sm font-medium transition-colors hover:text-primary-foreground ${
-              isActive("/teacher")
-                ? "text-primary-foreground underline"
-                : "text-primary-foreground/80"
-            }`}
-          >
-            Teacher
-          </Link>
+          
+          {userRole === "student" && (
+            <Link
+              to="/student"
+              className={`text-sm font-medium transition-colors hover:text-primary-foreground ${
+                isActive("/student")
+                  ? "text-primary-foreground underline"
+                  : "text-primary-foreground/80"
+              }`}
+            >
+              Student Portal
+            </Link>
+          )}
+          
+          {userRole === "teacher" && (
+            <Link
+              to="/teacher"
+              className={`text-sm font-medium transition-colors hover:text-primary-foreground ${
+                isActive("/teacher")
+                  ? "text-primary-foreground underline"
+                  : "text-primary-foreground/80"
+              }`}
+            >
+              Teacher Portal
+            </Link>
+          )}
+          
           <Button
             variant="secondary"
             size="sm"

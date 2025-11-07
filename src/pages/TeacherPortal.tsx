@@ -45,6 +45,28 @@ export default function TeacherPortal() {
     if (session?.user) {
       fetchClasses();
       fetchAttendance();
+      
+      // Subscribe to real-time attendance updates
+      const channel = supabase
+        .channel('attendance-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'attendance'
+          },
+          (payload) => {
+            console.log('New attendance record:', payload);
+            // Refresh attendance data when new record is inserted
+            fetchAttendance();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [session]);
 

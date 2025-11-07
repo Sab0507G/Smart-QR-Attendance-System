@@ -14,7 +14,149 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      attendance: {
+        Row: {
+          class_id: string
+          id: string
+          marked_at: string
+          qr_session_id: string
+          student_id: string
+        }
+        Insert: {
+          class_id: string
+          id?: string
+          marked_at?: string
+          qr_session_id: string
+          student_id: string
+        }
+        Update: {
+          class_id?: string
+          id?: string
+          marked_at?: string
+          qr_session_id?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_qr_session_id_fkey"
+            columns: ["qr_session_id"]
+            isOneToOne: false
+            referencedRelation: "qr_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      classes: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string
+          id: string
+          roll_number: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          full_name: string
+          id?: string
+          roll_number?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string
+          id?: string
+          roll_number?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      qr_sessions: {
+        Row: {
+          class_id: string
+          created_at: string
+          expires_at: string
+          id: string
+          qr_data: string
+          teacher_id: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          qr_data: string
+          teacher_id: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          qr_data?: string
+          teacher_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qr_sessions_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

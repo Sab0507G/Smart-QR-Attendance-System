@@ -88,45 +88,73 @@ export default function StudentPortal() {
   };
 
   const onScanSuccess = async (decodedText: string) => {
-    setScannedContent(decodedText);
-    await stopScanning();
+    if (!session?.user) return;
 
-    // Verify QR code and mark attendance - types will update after migration
-    const { data: qrSession, error: qrError } = await (supabase as any)
-      .from("qr_sessions")
-      .select("*")
-      .eq("qr_data", decodedText)
-      .single();
+    try {
+      await stopScanning();
+      setScannedContent(decodedText);
 
-    if (qrError || !qrSession) {
-      toast.error("Invalid or expired QR code");
-      return;
-    }
+      // types will update after migration
+      const { data: qrSession, error: qrError } = await (supabase as any)
+        .from("qr_sessions")
+        .select(`
+          *,
+          classes:class_id(name)
+        `)
+        .eq("qr_data", decodedText)
+        .single();
 
-    const now = new Date();
-    // @ts-ignore
-    const expiresAt = new Date(qrSession.expires_at);
-
-    if (now > expiresAt) {
-      toast.error("QR code has expired");
-      return;
-    }
-
-    // Mark attendance - types will update after migration
-    const { error: attendanceError } = await (supabase as any).from("attendance").insert({
-      student_id: session?.user.id,
-      qr_session_id: qrSession.id,
-      class_id: qrSession.class_id,
-    });
-
-    if (attendanceError) {
-      if (attendanceError.code === "23505") {
-        toast.error("Attendance already marked for this session");
-      } else {
-        toast.error("Failed to mark attendance");
+      if (qrError || !qrSession) {
+        toast.error("Invalid QR code");
+        return;
       }
-    } else {
-      toast.success("Attendance marked successfully!");
+
+      const now = new Date();
+      const expiresAt = new Date(qrSession.expires_at);
+
+      if (now > expiresAt) {
+        toast.error("QR code has expired");
+        return;
+      }
+
+      // Check if attendance already marked
+      const { data: existingAttendance } = await (supabase as any)
+        .from("attendance")
+        .select("*")
+        .eq("student_id", session.user.id)
+        .eq("qr_session_id", qrSession.id)
+        .single();
+
+      if (existingAttendance) {
+        toast.info("Attendance already marked for this session");
+        return;
+      }
+
+      const { error: attendanceError } = await (supabase as any)
+        .from("attendance")
+        .insert({
+          student_id: session.user.id,
+          qr_session_id: qrSession.id,
+          class_id: qrSession.class_id,
+        });
+
+      if (attendanceError) {
+        toast.error("Failed to mark attendance");
+        return;
+      }
+
+      // Format date
+      const sessionDate = new Date(qrSession.created_at).toLocaleDateString();
+      const className = qrSession.classes?.name || "Unknown Class";
+      
+      // Show detailed success message
+      toast.success(
+        `Your attendance for ${className} on ${sessionDate} has been marked present.`,
+        { duration: 5000 }
+      );
+    } catch (error) {
+      console.error("Scan error:", error);
+      toast.error("An error occurred");
     }
   };
 
