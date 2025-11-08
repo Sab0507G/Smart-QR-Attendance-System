@@ -85,16 +85,28 @@ export const Header = () => {
           )}
           
           {userRole === "teacher" && (
-            <Link
-              to="/teacher"
-              className={`text-sm font-medium transition-colors hover:text-primary-foreground ${
-                isActive("/teacher")
-                  ? "text-primary-foreground underline"
-                  : "text-primary-foreground/80"
-              }`}
-            >
-              Teacher Portal
-            </Link>
+            <>
+              <Link
+                to="/teacher"
+                className={`text-sm font-medium transition-colors hover:text-primary-foreground ${
+                  isActive("/teacher")
+                    ? "text-primary-foreground underline"
+                    : "text-primary-foreground/80"
+                }`}
+              >
+                Teacher Portal
+              </Link>
+              <Link
+                to="/teacher/analytics"
+                className={`text-sm font-medium transition-colors hover:text-primary-foreground ${
+                  isActive("/teacher/analytics")
+                    ? "text-primary-foreground underline"
+                    : "text-primary-foreground/80"
+                }`}
+              >
+                Analytics
+              </Link>
+            </>
           )}
           
           <Button
